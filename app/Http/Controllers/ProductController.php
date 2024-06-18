@@ -22,21 +22,25 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'title' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'description' => 'required|string',
-            'category' => 'required|string',
-            'image' => 'nullable|url',
-            'rating' => 'nullable|array',
-            'badge' => 'nullable|string',
-            'shipping' => 'nullable|string',
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'title' => 'required|string|max:255',
+                'price' => 'required|numeric|min:0',
+                'description' => 'required|string',
+                'category' => 'nullable|string',
+                'image' => 'nullable|url',
+                'rating' => 'nullable|array',
+                'badge' => 'nullable|string',
+                'shipping' => 'nullable|string',
+            ]);
 
-        // After validation, proceed with storing the product
-        $product = Product::create($validatedData);
+            $product = new Product($validatedData);
+            $product->save();
 
-        return response()->json(['message' => 'Product created successfully', 'product' => $product], 201);
+            return response()->json(['message' => 'Product created successfully', 'product' => $product], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to create product', 'details' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -58,7 +62,63 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'price' => 'sometimes|required|numeric|min:0',
+            'description' => 'sometimes|required|string',
+            'category' => 'sometimes|nullable|string',
+            'image' => 'sometimes|nullable|url',
+            'rating' => 'sometimes|nullable|array',
+            'badge' => 'sometimes|nullable|string',
+            'shipping' => 'sometimes|nullable|string',
+        ]);
+
+        // Find the product by its ID
+        $product = Product::findOrFail($id);
+
+        // Update the product with the new data
+        $updated = false;
+        if (!empty($validatedData['title'])) {
+            $product->title = $validatedData['title'];
+            $updated = true;
+        }
+        if (!empty($validatedData['price'])) {
+            $product->price = $validatedData['price'];
+            $updated = true;
+        }
+        if (!empty($validatedData['description'])) {
+            $product->description = $validatedData['description'];
+            $updated = true;
+        }
+        if (!empty($validatedData['category'])) {
+            $product->category = $validatedData['category'];
+            $updated = true;
+        }
+        if (!empty($validatedData['image'])) {
+            $product->image = $validatedData['image'];
+            $updated = true;
+        }
+        if (!empty($validatedData['rating'])) {
+            $product->rating = $validatedData['rating'];
+            $updated = true;
+        }
+        if (!empty($validatedData['badge'])) {
+            $product->badge = $validatedData['badge'];
+            $updated = true;
+        }
+        if (!empty($validatedData['shipping'])) {
+            $product->shipping = $validatedData['shipping'];
+            $updated = true;
+        }
+
+        // Save the changes
+        if ($updated) {
+            $product->save();
+            return response()->json(['message' => 'Product updated successfully'], 200);
+        } else {
+            return response()->json(['message' => 'No changes made'], 304);
+        }
     }
 
     /**

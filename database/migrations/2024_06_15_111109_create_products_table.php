@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string("title");
             $table->decimal("price", 10, 2);
             $table->text("description");
-            $table->string("category");
-            $table->string("image");
-            $table->json("rating");
+            $table->string("category")->nullable();
+            $table->string("image")->nullable();
+            $table->json("rating")->nullable();
             $table->string("badge")->nullable();
             $table->string("shipping")->nullable();
             $table->timestamps();
